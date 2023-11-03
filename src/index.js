@@ -5,7 +5,7 @@ const app = express();
 const bodyParser = require("body-parser");
 const port = process.env.PORT || 3000;
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
-const jwt = require("jsonwebtoken");
+const {verifyJWT,JWT} = require('./Middleware/verifyJWT'); 
 const stripe = require("stripe")(process.env.PAYMENT_SECRET_KEY);
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -32,38 +32,29 @@ const client = new MongoClient(uri, {
     maxPoolSize: 10,
 });
 
-// const verifyJWT = (req, res, next) => {
-//   const authorization = req.headers.authorization;
-//   if (!authorization) {
-//     return res
-//       .status(401)
-//       .send({ error: true, message: "unauthorized access" });
-//   }
-//   const token = authorization.split(" ")[1];
-//   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (error, decoded) => {
-//     if (error) {
-//       return res
-//         .status(401)
-//         .send({ error: true, message: "unauthorized access" });
-//     }
-//     req.decoded = decoded;
-//     next();
-//   });
-// };
+
 
 async function run() {
     try {
         const Collection = client.db("BookValley").collection("users");
+        const usersCollection = client.db("BookValley").collection("users");
 
+        app.post("/jwt", async(req, res) => {
+           await JWT(req,res)
+        });
 
-        // app.post("/jwt", (req, res) => {
-        //   const user = req.body;
-
-        //   const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
-        //     expiresIn: "7d",
-        //   });
-        //   res.send({ token });
-        // });
+        app.post("/users", async (req, res) => {
+            const user = req.body;
+            const query = { email: user.email };
+            const existingUser = await usersCollection.findOne(query);
+      
+            if (existingUser) {
+              return res.send({ message: "user already exists" });
+            }
+      
+            const result = await usersCollection.insertOne(user);
+            res.send(result);
+          });
 
         // const verifyAdmin = async (req, res, next) => {
         //   const email = req.decoded.email;
@@ -76,6 +67,10 @@ async function run() {
         //   }
         //   next();
         // };
+
+        app.get("/",(req,res)=>{
+            res.send("hello ewverybody")
+        })
 
 
         await client.db("admin").command({ ping: 1 });
