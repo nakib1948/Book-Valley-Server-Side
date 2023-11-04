@@ -6,6 +6,7 @@ const bodyParser = require("body-parser");
 const port = process.env.PORT || 3000;
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const {verifyJWT,JWT} = require('./Middleware/verifyJWT'); 
+const createUser = require('./Routes/users')
 const stripe = require("stripe")(process.env.PAYMENT_SECRET_KEY);
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -44,17 +45,8 @@ async function run() {
         });
 
         app.post("/users", async (req, res) => {
-            const user = req.body;
-            const query = { email: user.email };
-            const existingUser = await usersCollection.findOne(query);
-      
-            if (existingUser) {
-              return res.send({ message: "user already exists" });
-            }
-      
-            const result = await usersCollection.insertOne(user);
-            res.send(result);
-          });
+            createUser(req,res,usersCollection)
+        });
 
         // const verifyAdmin = async (req, res, next) => {
         //   const email = req.decoded.email;
