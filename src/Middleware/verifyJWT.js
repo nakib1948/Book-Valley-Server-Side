@@ -29,6 +29,6 @@ const JWT = (req,res)=>{
 }
 
 module.exports = {
-  verifyJWT,      // Export the first function
-  JWT,  // Export the second function
+  verifyJWT,     
+  JWT, 
 };

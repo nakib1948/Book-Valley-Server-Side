@@ -5,8 +5,9 @@ const app = express();
 const bodyParser = require("body-parser");
 const port = process.env.PORT || 3000;
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
-const {verifyJWT,JWT} = require('./Middleware/verifyJWT'); 
+const { verifyJWT, JWT } = require('./Middleware/verifyJWT');
 const createUser = require('./Routes/users')
+const getUserRole = require('./Routes/getUserRole')
 const stripe = require("stripe")(process.env.PAYMENT_SECRET_KEY);
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -37,31 +38,24 @@ const client = new MongoClient(uri, {
 
 async function run() {
     try {
-        const Collection = client.db("BookValley").collection("users");
         const usersCollection = client.db("BookValley").collection("users");
 
-        app.post("/jwt", async(req, res) => {
-           await JWT(req,res)
+        app.post("/jwt", async (req, res) => {
+            await JWT(req, res)
         });
 
         app.post("/users", async (req, res) => {
-            createUser(req,res,usersCollection)
+            createUser(req, res, usersCollection)
+        });
+        app.get("/users/role/:email", verifyJWT, async (req, res) => {
+            console.log('hitting')
+            getUserRole(req, res, usersCollection)
         });
 
-        // const verifyAdmin = async (req, res, next) => {
-        //   const email = req.decoded.email;
-        //   const query = { email: email };
-        //   const user = await usersCollection.findOne(query);
-        //   if (user?.role !== "admin") {
-        //     return res
-        //       .status(403)
-        //       .send({ error: true, message: "forbidden message" });
-        //   }
-        //   next();
-        // };
 
-        app.get("/",(req,res)=>{
-            res.send("hello ewverybody")
+
+        app.get("/", (req, res) => {
+            res.send("hello everybody")
         })
 
 
@@ -74,3 +68,4 @@ run().catch(console.dir);
 app.listen(port, function () {
     console.log(`Listening on port ${port}`);
 });
+
