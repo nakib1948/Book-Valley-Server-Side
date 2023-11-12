@@ -8,6 +8,7 @@ const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const { verifyJWT, JWT } = require('./Middleware/verifyJWT');
 const createUser = require('./Routes/users')
 const getUserRole = require('./Routes/getUserRole')
+const getAllPublisher = require('./Routes/getAllPublisher')
 const stripe = require("stripe")(process.env.PAYMENT_SECRET_KEY);
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -48,9 +49,14 @@ async function run() {
             createUser(req, res, usersCollection)
         });
         app.get("/users/role/:email", verifyJWT, async (req, res) => {
-            console.log('hitting')
             getUserRole(req, res, usersCollection)
         });
+
+        app.get("/allpublisher", verifyJWT, async (req, res) => {
+            getAllPublisher(req, res, usersCollection)
+        });
+
+
 
 
 
