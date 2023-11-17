@@ -1,3 +1,4 @@
+// Middleware/verifyUser.js
 const verifyAdmin = async (usersCollection) => async (req, res, next) => {
   const email = req.decoded.email;
   const query = { email: email };
@@ -40,4 +41,4 @@ const verifyPublisher = async (usersCollection) => async (req, res, next) => {
   next();
 };
 
-module.exports = { verifyAdmin,verifyWriter,verifyPublisher };
+module.exports = { verifyAdmin, verifyWriter, verifyPublisher };

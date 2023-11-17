@@ -9,6 +9,13 @@ const { verifyJWT, JWT } = require('./Middleware/verifyJWT');
 const createUser = require('./Routes/users')
 const getUserRole = require('./Routes/getUserRole')
 const getAllPublisher = require('./Routes/getAllPublisher')
+const postBookRequest = require('./Routes/postBookRequest')
+const getWriterRequest = require('./Routes/getWriterRequest')
+const getOffertoPublisher = require('./Routes/getOffertoPublisher')
+const postChat = require('./Routes/postChat')
+const getChat = require('./Routes/getChat')
+
+const { verifyAdmin, verifyPublisher } = require('./Middleware/verifyUser')
 const stripe = require("stripe")(process.env.PAYMENT_SECRET_KEY);
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -40,6 +47,33 @@ const client = new MongoClient(uri, {
 async function run() {
     try {
         const usersCollection = client.db("BookValley").collection("users");
+        const requestCollection = client.db("BookValley").collection("bookRequests");
+        const verifyWriter = async (req, res, next) => {
+            const email = req.decoded.email;
+            const query = { email: email };
+            const user = await usersCollection.findOne(query);
+
+            if (user?.role !== "writer") {
+                return res
+                    .status(403)
+                    .send({ error: true, message: "forbidden access" });
+            }
+
+            next();
+        };
+        const verifyPublisher = async (req, res, next) => {
+            const email = req.decoded.email;
+            const query = { email: email };
+            const user = await usersCollection.findOne(query);
+
+            if (user?.role !== "publisher") {
+                return res
+                    .status(403)
+                    .send({ error: true, message: "forbidden access" });
+            }
+            next();
+        };
+
 
         app.post("/jwt", async (req, res) => {
             await JWT(req, res)
@@ -56,9 +90,22 @@ async function run() {
             getAllPublisher(req, res, usersCollection)
         });
 
+        app.post("/requesttopublisher", verifyJWT, verifyWriter, async (req, res) => {
+            postBookRequest(req, res, requestCollection)
+        })
 
-
-
+        app.get("/writerrequest/:email", verifyJWT,verifyWriter, async (req, res) => {
+            getWriterRequest(req, res, requestCollection)
+        });
+        app.get("/offertopublisher/:email", verifyJWT,verifyPublisher, async (req, res) => {
+            getOffertoPublisher(req, res, requestCollection)
+        });
+        app.patch("/chat", verifyJWT, async (req, res) => {
+            postChat(req, res, requestCollection)
+        })
+        app.get("/getchat/:id", verifyJWT, async (req, res) => {
+            getChat(req, res, requestCollection)
+        });
 
         app.get("/", (req, res) => {
             res.send("hello everybody")
