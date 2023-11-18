@@ -15,6 +15,7 @@ const getOffertoPublisher = require('./Routes/getOffertoPublisher')
 const postChat = require('./Routes/postChat')
 const getChat = require('./Routes/getChat')
 const postAgreement = require('./Routes/postAgreement')
+const postWriterApproval = require('./Routes/postWriterApproval')
 
 const { verifyAdmin, verifyPublisher } = require('./Middleware/verifyUser')
 const stripe = require("stripe")(process.env.PAYMENT_SECRET_KEY);
@@ -108,14 +109,18 @@ async function run() {
             getChat(req, res, requestCollection)
         });
 
+        app.patch("/postagreement", verifyJWT,verifyPublisher, async (req, res) => {
+            postAgreement(req, res, requestCollection)
+        })
+        
+        app.patch("/writerapproval", verifyJWT,verifyWriter, async (req, res) => {
+            postWriterApproval(req, res, requestCollection)
+        })
+
+
         app.get("/", (req, res) => {
             res.send("hello everybody")
         })
-
-        app.patch("/postagreement", verifyJWT, async (req, res) => {
-            postAgreement(req, res, requestCollection)
-        })
-
 
         await client.db("admin").command({ ping: 1 });
     } finally {
