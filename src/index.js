@@ -16,6 +16,7 @@ const postChat = require('./Routes/postChat')
 const getChat = require('./Routes/getChat')
 const postAgreement = require('./Routes/postAgreement')
 const postWriterApproval = require('./Routes/postWriterApproval')
+const postUploadBook = require('./Routes/postUploadBook')
 
 const { verifyAdmin, verifyPublisher } = require('./Middleware/verifyUser')
 const stripe = require("stripe")(process.env.PAYMENT_SECRET_KEY);
@@ -117,7 +118,11 @@ async function run() {
             postWriterApproval(req, res, requestCollection)
         })
 
+        app.patch("/postuploadbook", verifyJWT,verifyPublisher, async (req, res) => {
+            postUploadBook(req, res, requestCollection)
+        })
 
+        
         app.get("/", (req, res) => {
             res.send("hello everybody")
         })
