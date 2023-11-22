@@ -17,8 +17,8 @@ const getChat = require('./Routes/getChat')
 const postAgreement = require('./Routes/postAgreement')
 const postWriterApproval = require('./Routes/postWriterApproval')
 const postUploadBook = require('./Routes/postUploadBook')
-
-const { verifyAdmin, verifyPublisher } = require('./Middleware/verifyUser')
+const getAllusers = require('./Routes/getAllusers')
+const getAllBook = require('./Routes/getAllBook')
 const stripe = require("stripe")(process.env.PAYMENT_SECRET_KEY);
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -76,6 +76,18 @@ async function run() {
             }
             next();
         };
+        const verifyAdmin = async (req, res, next) => {
+            const email = req.decoded.email;
+            const query = { email: email };
+            const user = await usersCollection.findOne(query);
+
+            if (user?.role !== "admin") {
+                return res
+                    .status(403)
+                    .send({ error: true, message: "forbidden access" });
+            }
+            next();
+        };
 
 
         app.post("/jwt", async (req, res) => {
@@ -85,6 +97,11 @@ async function run() {
         app.post("/users", async (req, res) => {
             createUser(req, res, usersCollection)
         });
+        
+        app.get("/allusers", async (req, res) => {
+            getAllusers(req, res, usersCollection)
+        });
+
         app.get("/users/role/:email", verifyJWT, async (req, res) => {
             getUserRole(req, res, usersCollection)
         });
@@ -121,8 +138,11 @@ async function run() {
         app.patch("/postuploadbook", verifyJWT,verifyPublisher, async (req, res) => {
             postUploadBook(req, res, requestCollection)
         })
-
         
+
+        app.get("/allbooks", verifyJWT, async (req, res) => {
+            getAllBook(req, res, requestCollection)
+        });
         app.get("/", (req, res) => {
             res.send("hello everybody")
         })
