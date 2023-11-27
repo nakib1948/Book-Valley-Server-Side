@@ -19,6 +19,7 @@ const postWriterApproval = require('./Routes/postWriterApproval')
 const postUploadBook = require('./Routes/postUploadBook')
 const getAllusers = require('./Routes/getAllusers')
 const getAllBook = require('./Routes/getAllBook')
+const PostAdminApproval = require('./Routes/PostAdminApproval')
 const stripe = require("stripe")(process.env.PAYMENT_SECRET_KEY);
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -143,8 +144,12 @@ async function run() {
         app.get("/allbooks", verifyJWT, async (req, res) => {
             getAllBook(req, res, requestCollection)
         });
+        app.patch("/PostAdminApproval", verifyJWT,verifyAdmin, async (req, res) => {
+            PostAdminApproval(req, res, requestCollection)
+        })
+        
         app.get("/", (req, res) => {
-            res.send("hello everybody")
+            res.send("server is running")
         })
 
         await client.db("admin").command({ ping: 1 });
