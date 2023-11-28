@@ -20,6 +20,9 @@ const postUploadBook = require('./Routes/postUploadBook')
 const getAllusers = require('./Routes/getAllusers')
 const getAllBook = require('./Routes/getAllBook')
 const PostAdminApproval = require('./Routes/PostAdminApproval')
+const getSingleBookdetails = require('./Routes/getSingleBookdetails')
+const getCheckDuplicateReview = require('./Routes/getCheckDuplicateReview')
+const postreview = require('./Routes/postreview')
 const stripe = require("stripe")(process.env.PAYMENT_SECRET_KEY);
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -147,6 +150,18 @@ async function run() {
         app.patch("/PostAdminApproval", verifyJWT,verifyAdmin, async (req, res) => {
             PostAdminApproval(req, res, requestCollection)
         })
+        
+        app.get("/getSingleBookdetails/:id", verifyJWT, async (req, res) => {
+            getSingleBookdetails(req, res, requestCollection)
+        });
+        
+        app.patch("/postreview", verifyJWT, async (req, res) => {
+            postreview(req, res, requestCollection)
+        })
+        
+        app.get("/getCheckDuplicateReview/:email/:id", verifyJWT, async (req, res) => {
+            getCheckDuplicateReview(req, res, requestCollection)
+        });
         
         app.get("/", (req, res) => {
             res.send("server is running")
