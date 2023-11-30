@@ -23,6 +23,13 @@ const PostAdminApproval = require('./Routes/PostAdminApproval')
 const getSingleBookdetails = require('./Routes/getSingleBookdetails')
 const getCheckDuplicateReview = require('./Routes/getCheckDuplicateReview')
 const postreview = require('./Routes/postreview')
+const getExistsIncart = require('./Routes/getExistsIncart')
+const postAddTocart = require('./Routes/postAddTocart')
+const getCartItem = require('./Routes/getCartItem')
+const deleteFromCart = require('./Routes/deleteFromCart')
+const postPaidBook = require('./Routes/postPaidBook')
+const UpdateSoldUnit = require('./Routes/UpdateSoldUnit')
+const UpdateCartToEmpty = require('./Routes/UpdateCartToEmpty')
 const stripe = require("stripe")(process.env.PAYMENT_SECRET_KEY);
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -55,6 +62,7 @@ async function run() {
     try {
         const usersCollection = client.db("BookValley").collection("users");
         const requestCollection = client.db("BookValley").collection("bookRequests");
+        const readerWriterCollection = client.db("BookValley").collection("reader-writer");
         const verifyWriter = async (req, res, next) => {
             const email = req.decoded.email;
             const query = { email: email };
@@ -99,9 +107,9 @@ async function run() {
         });
 
         app.post("/users", async (req, res) => {
-            createUser(req, res, usersCollection)
+            createUser(req, res, usersCollection, readerWriterCollection)
         });
-        
+
         app.get("/allusers", async (req, res) => {
             getAllusers(req, res, usersCollection)
         });
@@ -118,10 +126,10 @@ async function run() {
             postBookRequest(req, res, requestCollection)
         })
 
-        app.get("/writerrequest/:email", verifyJWT,verifyWriter, async (req, res) => {
+        app.get("/writerrequest/:email", verifyJWT, verifyWriter, async (req, res) => {
             getWriterRequest(req, res, requestCollection)
         });
-        app.get("/offertopublisher/:email", verifyJWT,verifyPublisher, async (req, res) => {
+        app.get("/offertopublisher/:email", verifyJWT, verifyPublisher, async (req, res) => {
             getOffertoPublisher(req, res, requestCollection)
         });
         app.patch("/chat", verifyJWT, async (req, res) => {
@@ -131,38 +139,76 @@ async function run() {
             getChat(req, res, requestCollection)
         });
 
-        app.patch("/postagreement", verifyJWT,verifyPublisher, async (req, res) => {
+        app.patch("/postagreement", verifyJWT, verifyPublisher, async (req, res) => {
             postAgreement(req, res, requestCollection)
         })
-        
-        app.patch("/writerapproval", verifyJWT,verifyWriter, async (req, res) => {
+
+        app.patch("/writerapproval", verifyJWT, verifyWriter, async (req, res) => {
             postWriterApproval(req, res, requestCollection)
         })
 
-        app.patch("/postuploadbook", verifyJWT,verifyPublisher, async (req, res) => {
+        app.patch("/postuploadbook", verifyJWT, verifyPublisher, async (req, res) => {
             postUploadBook(req, res, requestCollection)
         })
-        
+
 
         app.get("/allbooks", verifyJWT, async (req, res) => {
             getAllBook(req, res, requestCollection)
         });
-        app.patch("/PostAdminApproval", verifyJWT,verifyAdmin, async (req, res) => {
+        app.patch("/PostAdminApproval", verifyJWT, verifyAdmin, async (req, res) => {
             PostAdminApproval(req, res, requestCollection)
         })
-        
+
         app.get("/getSingleBookdetails/:id", verifyJWT, async (req, res) => {
             getSingleBookdetails(req, res, requestCollection)
         });
-        
+
         app.patch("/postreview", verifyJWT, async (req, res) => {
             postreview(req, res, requestCollection)
         })
-        
+
         app.get("/getCheckDuplicateReview/:email/:id", verifyJWT, async (req, res) => {
             getCheckDuplicateReview(req, res, requestCollection)
         });
-        
+        app.get("/existsIncart/:id", verifyJWT, async (req, res) => {
+            getExistsIncart(req, res, readerWriterCollection)
+        });
+        app.patch("/addTocart", verifyJWT, async (req, res) => {
+            postAddTocart(req, res, readerWriterCollection)
+        })
+        app.get("/getCartItem", verifyJWT, async (req, res) => {
+            getCartItem(req, res, readerWriterCollection)
+        });
+
+        app.patch("/deleteFromCart/:id", verifyJWT, async (req, res) => {
+            deleteFromCart(req, res, readerWriterCollection)
+        })
+
+        app.patch("/postPaidBook", verifyJWT, async (req, res) => {
+            postPaidBook(req, res, readerWriterCollection)
+        })
+        app.patch("/UpdateSoldUnit", verifyJWT, async (req, res) => {
+            UpdateSoldUnit(req, res, requestCollection)
+        })
+        app.patch("/UpdateCartToEmpty", verifyJWT, async (req, res) => {
+            UpdateCartToEmpty(req, res, readerWriterCollection)
+        })
+
+        app.post("/create-payment-intent", verifyJWT, async (req, res) => {
+            const { price } = req.body;
+            const amount = price * 100;
+            const paymentIntent = await stripe.paymentIntents.create({
+                amount: amount,
+                currency: "usd",
+                payment_method_types: ["card"],
+            });
+            res.send({
+                clientSecret: paymentIntent.client_secret,
+            });
+        });
+
+
+
         app.get("/", (req, res) => {
             res.send("server is running")
         })
