@@ -30,6 +30,7 @@ const deleteFromCart = require('./Routes/deleteFromCart')
 const postPaidBook = require('./Routes/postPaidBook')
 const UpdateSoldUnit = require('./Routes/UpdateSoldUnit')
 const UpdateCartToEmpty = require('./Routes/UpdateCartToEmpty')
+const getPaidBook = require('./Routes/getPaidBook')
 const stripe = require("stripe")(process.env.PAYMENT_SECRET_KEY);
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -193,6 +194,10 @@ async function run() {
         app.patch("/UpdateCartToEmpty", verifyJWT, async (req, res) => {
             UpdateCartToEmpty(req, res, readerWriterCollection)
         })
+
+        app.get("/getPaidBook", verifyJWT, async (req, res) => {
+            getPaidBook(req, res, readerWriterCollection)
+        });
 
         app.post("/create-payment-intent", verifyJWT, async (req, res) => {
             const { price } = req.body;
