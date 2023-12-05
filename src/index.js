@@ -31,6 +31,8 @@ const postPaidBook = require('./Routes/postPaidBook')
 const UpdateSoldUnit = require('./Routes/UpdateSoldUnit')
 const UpdateCartToEmpty = require('./Routes/UpdateCartToEmpty')
 const getPaidBook = require('./Routes/getPaidBook')
+const postFreeBook = require('./Routes/postFreeBook')
+const getExistInPaidbook = require('./Routes/getExistInPaidbook')
 const stripe = require("stripe")(process.env.PAYMENT_SECRET_KEY);
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -64,6 +66,7 @@ async function run() {
         const usersCollection = client.db("BookValley").collection("users");
         const requestCollection = client.db("BookValley").collection("bookRequests");
         const readerWriterCollection = client.db("BookValley").collection("reader-writer");
+        const freebookCollection = client.db("BookValley").collection("freebook");
         const verifyWriter = async (req, res, next) => {
             const email = req.decoded.email;
             const query = { email: email };
@@ -174,6 +177,9 @@ async function run() {
         app.get("/existsIncart/:id", verifyJWT, async (req, res) => {
             getExistsIncart(req, res, readerWriterCollection)
         });
+        app.get("/existsInPaidbook/:id", verifyJWT, async (req, res) => {
+            getExistInPaidbook(req, res, readerWriterCollection)
+        });
         app.patch("/addTocart", verifyJWT, async (req, res) => {
             postAddTocart(req, res, readerWriterCollection)
         })
@@ -198,6 +204,10 @@ async function run() {
         app.get("/getPaidBook", verifyJWT, async (req, res) => {
             getPaidBook(req, res, readerWriterCollection)
         });
+
+        app.post("/postFreeBook",verifyJWT, verifyAdmin,async (req, res) => {
+            postFreeBook(req, res, freebookCollection)
+        })
 
         app.post("/create-payment-intent", verifyJWT, async (req, res) => {
             const { price } = req.body;
