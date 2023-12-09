@@ -40,6 +40,10 @@ const deleteFromFreeBook = require('./Routes/deleteFromFreeBook')
 const getReaderFreeBookItem = require('./Routes/getReaderFreeBookItem')
 const getPaymentDetails = require('./Routes/getPaymentDetails')
 const postReaderProfileUpdate = require('./Routes/postReaderProfileUpdate')
+const postWriterProfileUpdate = require('./Routes/postWriterProfileUpdate')
+const postWriterBlog = require('./Routes/postWriterBlog')
+const getAllBlog = require('./Routes/getAllBlog')
+const PostBlogApproval = require('./Routes/PostBlogApproval')
 
 const stripe = require("stripe")(process.env.PAYMENT_SECRET_KEY);
 app.use(bodyParser.json());
@@ -75,6 +79,7 @@ async function run() {
         const requestCollection = client.db("BookValley").collection("bookRequests");
         const readerWriterCollection = client.db("BookValley").collection("reader-writer");
         const freebookCollection = client.db("BookValley").collection("freebook");
+        const blogCollection = client.db("BookValley").collection("blog");
         const verifyWriter = async (req, res, next) => {
             const email = req.decoded.email;
             const query = { email: email };
@@ -193,7 +198,7 @@ async function run() {
         });
         app.patch("/addTocart", verifyJWT, async (req, res) => {
             postAddTocart(req, res, readerWriterCollection)
-        }) 
+        })
         app.patch("/postAddToFreeBook", verifyJWT, async (req, res) => {
             postAddToFreeBook(req, res, readerWriterCollection)
         })
@@ -203,7 +208,7 @@ async function run() {
 
         app.patch("/deleteFromCart/:id", verifyJWT, async (req, res) => {
             deleteFromCart(req, res, readerWriterCollection)
-        }) 
+        })
         app.patch("/deleteFromFreeBook/:id", verifyJWT, async (req, res) => {
             deleteFromFreeBook(req, res, readerWriterCollection)
         })
@@ -220,29 +225,42 @@ async function run() {
 
         app.get("/getPaidBook", verifyJWT, async (req, res) => {
             getPaidBook(req, res, readerWriterCollection)
-        }); 
+        });
 
-        app.post("/postFreeBook",verifyJWT, verifyAdmin,async (req, res) => {
+        app.post("/postFreeBook", verifyJWT, verifyAdmin, async (req, res) => {
             postFreeBook(req, res, freebookCollection)
         })
 
         app.get("/getFreeBook", verifyJWT, async (req, res) => {
             getFreeBook(req, res, freebookCollection)
-        });  
+        });
 
-        
+
         app.get("/getReaderFreeBookItem", verifyJWT, async (req, res) => {
             getReaderFreeBookItem(req, res, readerWriterCollection)
-        }); 
+        });
 
         app.get("/getPaymentDetails", verifyJWT, async (req, res) => {
             getPaymentDetails(req, res, readerWriterCollection)
         });
-        
+
         app.patch("/updateReader", verifyJWT, async (req, res) => {
             postReaderProfileUpdate(req, res, usersCollection)
         })
+        app.patch("/postWriterProfileUpdate", verifyJWT, async (req, res) => {
+            postWriterProfileUpdate(req, res, usersCollection)
+        })
 
+        app.post("/postWriterBlog", verifyJWT, verifyWriter, async (req, res) => {
+            postWriterBlog(req, res, blogCollection)
+        })
+
+        app.get("/getAllBlog", verifyJWT, verifyAdmin, async (req, res) => {
+            getAllBlog(req, res, blogCollection)
+        });
+        app.patch("/PostBlogApproval", verifyJWT, async (req, res) => {
+            PostBlogApproval(req, res, blogCollection)
+        })
         app.post("/create-payment-intent", verifyJWT, async (req, res) => {
             const { price } = req.body;
             const amount = price * 100;

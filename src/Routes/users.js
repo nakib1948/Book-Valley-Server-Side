@@ -17,7 +17,7 @@ const createUser = async (req, res, usersCollection, readerWriterCollection) => 
   }
 
   const result = await usersCollection.insertOne(user);
-  if (await user.role !== "publisher") {
+  if (await user.role !== "publisher" && user.role!=="writer") {
     await readerWriterCollection.insertOne(reader)
 
   }
