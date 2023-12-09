@@ -44,6 +44,7 @@ const postWriterProfileUpdate = require('./Routes/postWriterProfileUpdate')
 const postWriterBlog = require('./Routes/postWriterBlog')
 const getAllBlog = require('./Routes/getAllBlog')
 const PostBlogApproval = require('./Routes/PostBlogApproval')
+const getSingleBlogDetails = require('./Routes/getSingleBlogDetails')
 
 const stripe = require("stripe")(process.env.PAYMENT_SECRET_KEY);
 app.use(bodyParser.json());
@@ -169,7 +170,7 @@ async function run() {
         })
 
 
-        app.get("/allbooks", verifyJWT, async (req, res) => {
+        app.get("/allbooks", async (req, res) => {
             getAllBook(req, res, requestCollection)
         });
         app.patch("/PostAdminApproval", verifyJWT, verifyAdmin, async (req, res) => {
@@ -255,12 +256,15 @@ async function run() {
             postWriterBlog(req, res, blogCollection)
         })
 
-        app.get("/getAllBlog", verifyJWT, verifyAdmin, async (req, res) => {
+        app.get("/getAllBlog",async (req, res) => {
             getAllBlog(req, res, blogCollection)
         });
         app.patch("/PostBlogApproval", verifyJWT, async (req, res) => {
             PostBlogApproval(req, res, blogCollection)
         })
+        app.get("/getSingleBlogDetails/:id", verifyJWT, async (req, res) => {
+            getSingleBlogDetails(req, res, blogCollection)
+        });
         app.post("/create-payment-intent", verifyJWT, async (req, res) => {
             const { price } = req.body;
             const amount = price * 100;
