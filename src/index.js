@@ -45,6 +45,10 @@ const postWriterBlog = require('./Routes/postWriterBlog')
 const getAllBlog = require('./Routes/getAllBlog')
 const PostBlogApproval = require('./Routes/PostBlogApproval')
 const getSingleBlogDetails = require('./Routes/getSingleBlogDetails')
+const getWithdrawAmount = require('./Routes/getWithdrawAmount')
+const updateWithdrawAmount = require('./Routes/updateWithdrawAmount')
+const updateWithdrawHistory = require('./Routes/updateWithdrawHistory')
+const postpublisherProfileUpdate = require('./Routes/postpublisherProfileUpdate')
 
 const stripe = require("stripe")(process.env.PAYMENT_SECRET_KEY);
 app.use(bodyParser.json());
@@ -248,7 +252,7 @@ async function run() {
         app.patch("/updateReader", verifyJWT, async (req, res) => {
             postReaderProfileUpdate(req, res, usersCollection)
         })
-        app.patch("/postWriterProfileUpdate", verifyJWT, async (req, res) => {
+        app.patch("/postWriterProfileUpdate", verifyJWT,verifyWriter, async (req, res) => {
             postWriterProfileUpdate(req, res, usersCollection)
         })
 
@@ -265,6 +269,23 @@ async function run() {
         app.get("/getSingleBlogDetails/:id", verifyJWT, async (req, res) => {
             getSingleBlogDetails(req, res, blogCollection)
         });
+
+        
+        app.get("/getWithdrawAmount", verifyJWT, async (req, res) => {
+            getWithdrawAmount(req, res, usersCollection)
+        });
+        
+        app.patch("/updateWithdrawAmount", verifyJWT, async (req, res) => {
+            updateWithdrawAmount(req, res, usersCollection)
+        })
+        
+        app.patch("/updateWithdrawHistory", verifyJWT, async (req, res) => {
+            updateWithdrawHistory(req, res, usersCollection)
+        })
+        app.patch("/postpublisherProfileUpdate", verifyJWT,verifyPublisher, async (req, res) => {
+            postpublisherProfileUpdate(req, res, usersCollection)
+        })
+
         app.post("/create-payment-intent", verifyJWT, async (req, res) => {
             const { price } = req.body;
             const amount = price * 100;
