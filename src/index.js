@@ -49,6 +49,9 @@ const getWithdrawAmount = require('./Routes/getWithdrawAmount')
 const updateWithdrawAmount = require('./Routes/updateWithdrawAmount')
 const updateWithdrawHistory = require('./Routes/updateWithdrawHistory')
 const postpublisherProfileUpdate = require('./Routes/postpublisherProfileUpdate')
+const postBlockUser = require('./Routes/postBlockUser')
+const getSingleUser = require('./Routes/getSingleUser')
+const getAllStatistic = require('./Routes/getAllStatistic')
 
 const stripe = require("stripe")(process.env.PAYMENT_SECRET_KEY);
 app.use(bodyParser.json());
@@ -132,8 +135,16 @@ async function run() {
             createUser(req, res, usersCollection, readerWriterCollection)
         });
 
+
         app.get("/allusers", async (req, res) => {
             getAllusers(req, res, usersCollection)
+        });
+        app.get("/getAllStatistic",verifyJWT,verifyAdmin, async (req, res) => {
+            getAllStatistic(req, res, usersCollection,requestCollection,readerWriterCollection,freebookCollection,blogCollection)
+        });
+
+        app.get("/getSingleUser/:email", async (req, res) => {
+            getSingleUser(req, res, usersCollection)
         });
 
         app.get("/users/role/:email", verifyJWT, async (req, res) => {
@@ -284,6 +295,9 @@ async function run() {
         })
         app.patch("/postpublisherProfileUpdate", verifyJWT,verifyPublisher, async (req, res) => {
             postpublisherProfileUpdate(req, res, usersCollection)
+        })
+        app.patch("/postBlockUser/:id", verifyJWT,verifyAdmin, async (req, res) => {
+            postBlockUser(req, res, usersCollection)
         })
 
         app.post("/create-payment-intent", verifyJWT, async (req, res) => {
