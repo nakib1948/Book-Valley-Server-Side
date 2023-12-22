@@ -52,6 +52,10 @@ const postpublisherProfileUpdate = require('./Routes/postpublisherProfileUpdate'
 const postBlockUser = require('./Routes/postBlockUser')
 const getSingleUser = require('./Routes/getSingleUser')
 const getAllStatistic = require('./Routes/getAllStatistic')
+const updateDeclineRequestbyPubliher = require('./Routes/updateDeclineRequestbyPubliher')
+const getApprovedBooks = require('./Routes/getApprovedBooks')
+const getBookByCategories = require('./Routes/getBookByCategories')
+const getRecommededBook = require('./Routes/getRecommededBook')
 
 const stripe = require("stripe")(process.env.PAYMENT_SECRET_KEY);
 app.use(bodyParser.json());
@@ -139,6 +143,10 @@ async function run() {
         app.get("/allusers", async (req, res) => {
             getAllusers(req, res, usersCollection)
         });
+        
+        app.get("/getApprovedBooks", async (req, res) => {
+            getApprovedBooks(req, res, requestCollection)
+        });
         app.get("/getAllStatistic",verifyJWT,verifyAdmin, async (req, res) => {
             getAllStatistic(req, res, usersCollection,requestCollection,readerWriterCollection,freebookCollection,blogCollection)
         });
@@ -175,7 +183,10 @@ async function run() {
         app.patch("/postagreement", verifyJWT, verifyPublisher, async (req, res) => {
             postAgreement(req, res, requestCollection)
         })
-
+        
+        app.patch("/updateDeclineRequestbyPubliher/:id", verifyJWT, verifyPublisher, async (req, res) => {
+            updateDeclineRequestbyPubliher(req, res, requestCollection)
+        })
         app.patch("/writerapproval", verifyJWT, verifyWriter, async (req, res) => {
             postWriterApproval(req, res, requestCollection)
         })
@@ -188,6 +199,13 @@ async function run() {
         app.get("/allbooks", async (req, res) => {
             getAllBook(req, res, requestCollection)
         });
+        app.get("/getBookByCategories/:category", async (req, res) => {
+            getBookByCategories(req, res, requestCollection)
+        });
+        app.get("/getRecommededBook", async (req, res) => {
+            getRecommededBook(req, res, requestCollection)
+        });
+
         app.patch("/PostAdminApproval", verifyJWT, verifyAdmin, async (req, res) => {
             PostAdminApproval(req, res, requestCollection)
         })
